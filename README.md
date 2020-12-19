@@ -8,5 +8,5 @@ NTLang，即NTLanguage，又名MOYU，膜语言，一款基于JAVA的，臃肿�
 - [ ] 实现Map
 - [ ] 实现List
 - [ ] 实现Binding，让用户可在JAVA中传变量以值
-- [ ] _TMP在医院或称局部作用域
+- [ ] _TMP作用域或称局部作用域
 - [ ] 其它。。。。。
