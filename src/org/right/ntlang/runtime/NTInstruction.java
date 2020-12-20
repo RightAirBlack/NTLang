@@ -1,6 +1,6 @@
 package org.right.ntlang.runtime;
 
-//一条指令
+//一条指令即"字节码"
 public class NTInstruction {
     public NTInstruction(NTOpcode opcode, int operand0) {
         this(opcode, operand0, 0);

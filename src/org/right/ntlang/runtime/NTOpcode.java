@@ -11,6 +11,8 @@ public enum NTOpcode {
     STORE_TMP,
     LOAD_MAP,
     STORE_MAP,
+    LOAD_VAR,
+    STORE_VAR,
     JUMP,
     LOOP,
     JUMP_IF_FALSE,
@@ -21,8 +23,8 @@ public enum NTOpcode {
     MOV, // 赋值操作
     TMP, // 申请一个临时变量
     CALL, // 调用函数
-    
-    END; // 伪代码
+    CALL_METHOD, // 
+    END; // 伪代码，仅表示文件结尾
 
     public int getValue() {
         return this.ordinal();
