@@ -15,6 +15,11 @@ public class NTValue {
         }
     }
     
+    //一些常量
+    public static final NTValue NaN = new NTValue(Double.NaN);
+    public static final NTValue NIL = new NTValue(ValueType.NIL);
+    public static final NTValue TRUE = new NTValue(ValueType.TRUE);
+    public static final NTValue FALSE = new NTValue(ValueType.FALSE);
     private ValueType type;
     private Object userdata = null;
     private String str = null;
@@ -29,6 +34,10 @@ public class NTValue {
         this(ValueType.CALLABLE);
         caller = c;
     }
+    public NTValue(String c) {
+        this(ValueType.STRING);
+        str = c;
+    }
     public NTValue(double n) {
         this(ValueType.NUM);
         setValue(n);
@@ -38,6 +47,14 @@ public class NTValue {
         return type;
     }
     
+    public int toInt() throws RunningException {
+        switch (type) {
+            case NUM:
+                return  (int)num;
+            default:
+                throw new RunningException("[" + type.name() + " " + this.toString() + "] cannot call method toInt()!");
+        }
+    }
     @Override
     public String toString() {
         switch (type) {
@@ -57,6 +74,28 @@ public class NTValue {
                 return map.toString();
             default:
                 return userdata.toString();
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        switch (type) {
+            case NIL:
+                return "nil".hashCode();
+            case FALSE:
+                return "false".hashCode();
+            case TRUE:
+                return "true".hashCode();
+            case NUM:
+                return new Double(num).hashCode();
+            case STRING:
+                return str.hashCode();
+            case CALLABLE:
+                return caller.hashCode();
+            case MAP:
+                return map.hashCode();
+            default:
+                return userdata.hashCode();
         }
     }
     
@@ -84,13 +123,13 @@ public class NTValue {
         userdata = o;
     }
     
-    public void setValue(boolean b) {
-        if (type != ValueType.NIL || type != ValueType.FALSE || type != ValueType.TRUE)
-            return;
-        type = b ? ValueType.TRUE : ValueType.FALSE;
-        num = b ? 1.0 : 0.0;
-    }
-    
+//    public void setValue(boolean b) {
+//        if (type != ValueType.NIL || type != ValueType.FALSE || type != ValueType.TRUE)
+//            return;
+//        type = b ? ValueType.TRUE : ValueType.FALSE;
+//        num = b ? 1.0 : 0.0;
+//    }
+//    
     public void setValue(double n) {
         num = n;
     }

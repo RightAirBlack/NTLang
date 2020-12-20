@@ -21,9 +21,9 @@ public class Main
             vm.setParser(p);
             try {
                 vm.compile();
-            
-                System.out.println("SOURCE CODE: " + vm.getParser().sourceCode + "\f");
                 vm.call();
+                System.out.println("SOURCE CODE: " + vm.getParser().sourceCode + "\f");
+                System.out.println(vm.s.pop());
             } catch (LexException e) {
                 e.printStackTrace();
             } catch (Exception e) {
