@@ -3,6 +3,7 @@ import java.util.concurrent.*;
 import org.right.ntlang.*;
 import org.right.ntlang.exception.*;
 import org.right.ntlang.interfaces.*;
+import org.right.ntlang.runtime.*;
 
 public class NTCompileUnit implements Callable {
 
@@ -13,7 +14,7 @@ public class NTCompileUnit implements Callable {
     public NTCompileUnit(NTParser p) {
         curParser = p;
         p.curCompileUnit = this;
-        fn = new NTFn();
+        fn = new NTFn(p.getVM());
     }
 
     public void compileProgram() throws LexException, CompileException
@@ -45,4 +46,29 @@ public class NTCompileUnit implements Callable {
         }
     }
     
+    // "字节码"相关
+    public void writeOpcodeCall(int fnName,int varNum) {
+        fn.addInstruction(NTOpcode.CALL,fnName,varNum);
+    }
+    public void writeOpcodeMov(int from,int to) {
+        fn.addInstruction(NTOpcode.MOV,from,to);
+    }
+    public void writeOpcodePushNil() {
+        fn.addInstruction(NTOpcode.PUSH_NIL,0);
+    }
+    public void writeOpcodePushFalse() {
+        fn.addInstruction(NTOpcode.PUSH_FALSE,0);
+    }
+    public void writeOpcodePushTrue() {
+        fn.addInstruction(NTOpcode.PUSH_TRUE,0);
+    }
+    public void writeOpcodeLoadConstant(int valuePtrInConstant) {
+        fn.addInstruction(NTOpcode.LOAD_CONSTANT,valuePtrInConstant);
+    }
+    public void writeOpcodeLoadVar(String varNameInVars) {
+        fn.addInstruction(NTOpcode.LOAD_MAP,varNameInVars);
+    }
+    public void writeOpcodeStoreVar(String varNameInVars) {
+        fn.addInstruction(NTOpcode.STORE_MAP,varNameInVars);
+    }
 }

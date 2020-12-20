@@ -51,8 +51,10 @@ public class NTBindRules {
     private static final DenotationFn literal = new DenotationFn() {
         @Override
         public void call(NTCompileUnit cu, boolean canAssign) {
-            cu.curParser.getVM().s.push(cu.curParser.curToken.value);
+            NTVM vm = cu.curParser.getVM();
+            cu.writeOpcodeLoadConstant(vm.addConstant(cu.curParser.curToken.value));
             // System.out.println("data " + cu.curParser.getVM().s.peek());
+            
         }
         
         
@@ -64,15 +66,13 @@ public class NTBindRules {
             SymbolBindRule rule = rules.get(cu.curParser.preToken.type);
             BindPower rbp = rule.lbp;// 中缀运算符对左右操作数的绑定权值一样。
             cu.expression(rbp);
-            NTParser p = cu.curParser;
-            NTToken t = p.curToken;
             NTVM vm = cu.curParser.getVM();
-            NTFn fn = cu.fn;
 //            Stack<NTValue> s = cu.curParser.getVM().s;
 //            NTValue b = s.pop() ,a = s.pop();
 //            s.push(new NTValue((double)(Double)a.getValue() + (double)(Double)b.getValue()));
-            
-            fn.addInstruction(NTOpcode.CALL,vm.vars.get(rule.id).toString());
+            Integer tmp = vm.constantVars_SI.get(rule.id);
+            cu.writeOpcodeCall(tmp,2);
+            //fn.addInstruction(NTOpcode.CALL,vm.vars.get(rule.id).toString());
             // cu.curParser.getVM().vars.get(rule.id).call(cu.curParser.getVM());
           
         }
@@ -84,18 +84,14 @@ public class NTBindRules {
             SymbolBindRule rule = rules.get(cu.curParser.preToken.type);
             // System.out.println("id " + cu.curParser.preToken.type);
             cu.expression(BindPower.UNARY);
-            try {
-                // System.out.println("id2 " +  cu.curParser.getVM().vars.containsKey(rule.id + " nud"));
+            NTVM vm = cu.curParser.getVM();
+            // System.out.println("id2 " +  cu.curParser.getVM().vars.containsKey(rule.id + " nud"));
                 
-                NTValue v = cu.curParser.getVM().vars.get(rule.id + " nud");
-                assert v != null:"hhh";
-                // System.out.println(v == null);
-                v.call(cu.curParser.getVM());
-            }
-            catch (RunningException e) {
-                e.printStackTrace();
-            }
-
+            NTValue v = cu.curParser.getVM().vars.get(rule.id + " nud");
+            assert v != null:"hhh";
+            // System.out.println(v == null);
+            cu.writeOpcodeCall(vm.constantVars_SI.get(new NTValue(rule.id)),1);
+            //  v.call(cu.curParser.getVM());
         }
     };
     // 标识符的.nud()方法。
@@ -106,10 +102,10 @@ public class NTBindRules {
             NTVM vm = cu.curParser.getVM();
             Map<String,NTValue> vars = vm.vars;
             if (!vars.containsKey(cu.curParser.sourceCode.substring(name.start,name.start + name.length))) {
-                vm.s.push(new NTValue(NTValue.ValueType.NIL));
+                cu.writeOpcodePushNil();
                 return;
             }
-            vm.s.push(vars.get(cu.curParser.sourceCode.substring(name.start,name.start + name.length)));
+            cu.writeOpcodeLoadVar(cu.curParser.sourceCode.substring(name.start,name.start + name.length));
         }
     };
     // 「(」的.nud()方法。
