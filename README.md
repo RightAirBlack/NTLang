@@ -4,7 +4,7 @@ NTLang，即NTLanguage，又名MOYU，膜语言，一款基于JAVA的，臃肿�
 # 目前开发进度
 - [X] 词法分析器
 - [X] 基本数学表达式运算
-- [ ] 使用字节码
+- [X] 使用字节码
 - [ ] 实现Map
 - [ ] 实现List
 - [ ] 实现Binding，让用户可在JAVA中传变量以值
