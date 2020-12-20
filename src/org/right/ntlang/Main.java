@@ -12,6 +12,10 @@ public class Main
         StringBuffer str = new StringBuffer();
         Scanner s = new Scanner(System.in);
             System.out.println("**********欢迎使用MOYU表达式语言************\t");
+        vm.vars.put("a",new NTValue(23));
+        Map<String,NTValue> m = new HashMap<>();
+        m.put("a",new NTValueNum(114514));
+        vm.vars.put("m",new NTValue(m));
         while (true) {
             
             System.out.println("*************请输入表达式*************\t");
@@ -23,7 +27,7 @@ public class Main
                 vm.compile();
                 vm.call();
                 System.out.println("SOURCE CODE: " + vm.getParser().sourceCode + "\f");
-                System.out.println(vm.s.pop());
+                System.out.println(vm.getThis());
             } catch (LexException e) {
                 e.printStackTrace();
             } catch (Exception e) {

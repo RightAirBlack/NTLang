@@ -11,6 +11,15 @@ public class NTVM implements Callable
     private int constantCount = 0;
     public  Map<Integer,NTValue> constantVars_IV;
     public  Map<String,Integer> constantVars_SI;
+    // 记录上次运行时表达式的值
+  
+    private NTValue _THIS;
+    public void setThis(NTValue tHIS)  {
+        _THIS = tHIS;
+    }
+    public NTValue getThis() {
+        return _THIS;
+    }
     // 添加一个常量并加入变量表中(????)
     public  int addConstant(NTValue v) {
         if (constantVars_IV == null)
@@ -27,81 +36,81 @@ public class NTVM implements Callable
     public Map<String,NTValue> vars = new HashMap<String,NTValue>(){{
             put("- nud", new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             NTValue v = vm.s.pop();
                             vm.s.push(new NTValue(-((double)(Double)v.getValue())));
-                            return 0;
+                            return false;
                         }              
             }));
             addConstant(new NTValue("- nud"));
             put("+ nud", new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             NTValue v = vm.s.pop();
                             vm.s.push(new NTValue(-((double)(Double)v.getValue())));
-                            return 0;
+                            return false;
                         }              
                     }));
             addConstant(new NTValue("+ nud"));
             put("+",    new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             Stack<NTValue> s = vm.s;
                             // dumpStack(s);
                             NTValue b = s.pop(),a = s.pop();
                             s.push(new NTValue((double)(Double)a.getValue() + (double)(Double)b.getValue()));
-                            return 0;
+                            return false;
                         }
              }));
             addConstant(new NTValue("+"));
             put("-",    new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             Stack<NTValue> s = vm.s;
                             
                             NTValue b = s.pop(),a = s.pop();
                             s.push(new NTValue((double)(Double)a.getValue() - (double)(Double)b.getValue()));                      
-                            return 0;
+                            return false;
                         }
                     }));
             addConstant(new NTValue("-"));
             put("*",    new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             Stack<NTValue> s = vm.s;
                             NTValue b = s.pop(),a = s.pop();
                             s.push(new NTValue((double)(Double)a.getValue() * (double)(Double)b.getValue()));                       
-                            return 0;
+                            return false;
                         }
                     }));
             addConstant(new NTValue("*"));
             put("/",    new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             Stack<NTValue> s = vm.s;
                             NTValue b = s.pop(),a = s.pop();
                             s.push(new NTValue((double)(Double)a.getValue() / (double)(Double)b.getValue()));                        
-                            return 0;
+                            return false;
                         }
                     }));
             addConstant(new NTValue("/"));
             put("%",    new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             Stack<NTValue> s = vm.s;
                             NTValue b = s.pop(),a = s.pop();
                             s.push(new NTValue((double)(Double)a.getValue() % (double)(Double)b.getValue()));                        
-                            return 0;
+                            return false;
                         }
                     }));
             addConstant(new NTValue("%"));
             put("**",    new NTValue(new NTCallable() {
                         @Override
-                        public int call(NTVM vm) throws RunningException {
+                        public boolean call(NTVM vm,int varNum) throws RunningException {
                             Stack<NTValue> s = vm.s;
                             NTValue b = s.pop(),a = s.pop();
                             s.push(new NTValue(Math.pow( (double)(Double)a.getValue() , (double)(Double)b.getValue()) ));                        
-                            return 0;
+                            return false;
                         }
                     }));
            addConstant(new NTValue("**"));
@@ -114,9 +123,10 @@ public class NTVM implements Callable
     }
     // 编译完后调用vm.call()，并以尾递归的方式调用当前编译单元的.call()
     @Override
-    public VMResult call() throws Exception
-    {
-        return curParser.curCompileUnit.call();
+    public VMResult call() throws Exception {
+        VMResult result = curParser.curCompileUnit.call();
+        _THIS = s.pop();
+        return result;
 //        return VMResult.ERROR;
 //        System.out.println(s.peek());
 //        return VMResult.SUCCESS;
@@ -136,12 +146,17 @@ public class NTVM implements Callable
         curParser.getNextToken();
         while (!curParser.matchToken(NTToken.TokenType.EOF)) {
            cu.compileProgram();
-        }
-        
-        
+        }     
     }
 
-    
+    // 用于跳过函数或方法中不要的实参，并返回
+    public NTValue[] popNumTimes(int times) {
+        // 最多支持16个形参
+        NTValue[] values = new NTValue[16];
+        for (int i = 0;i < times;i++)
+            values[i] = s.pop();
+        return values;
+    }
     
     /*********DEBUG***********/
     public static void dumpStack(Stack<NTValue> s) {
