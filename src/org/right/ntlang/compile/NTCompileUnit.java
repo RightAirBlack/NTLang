@@ -45,7 +45,21 @@ public class NTCompileUnit implements Callable {
             led.call(this,canAssign);
         }
     }
-    
+    // 为实参列表中的各个实参生成加载指令
+    public int processArgList() throws LexException, CompileException {
+        // 由主调用方保证参数不为空
+        if (curParser.curToken.type == NTToken.TokenType.RIGHT_PAREN || 
+           curParser.curToken.type == NTToken.TokenType.RIGHT_BRACKET ||
+           curParser.curToken.type == NTToken.TokenType.RIGHT_BRACE)
+            throw new CompileException("empty argument list!");
+        int argNum = 0;
+        do {
+            if (++argNum > 16)
+                throw new CompileException("the max number of argument if 16!");
+            expression(NTBindRules.BindPower.LOWEST);
+        } while (curParser.matchToken(NTToken.TokenType.COMMA));
+        return argNum;
+    }
     // "字节码"相关
     public void writeOpcodeCall(int fnName,int varNum) {
         fn.addInstruction(NTOpcode.CALL,fnName,varNum);
@@ -66,9 +80,18 @@ public class NTCompileUnit implements Callable {
         fn.addInstruction(NTOpcode.LOAD_CONSTANT,valuePtrInConstant);
     }
     public void writeOpcodeLoadVar(String varNameInVars) {
-        fn.addInstruction(NTOpcode.LOAD_MAP,varNameInVars);
+        fn.addInstruction(NTOpcode.LOAD_VAR,varNameInVars);
     }
     public void writeOpcodeStoreVar(String varNameInVars) {
-        fn.addInstruction(NTOpcode.STORE_MAP,varNameInVars);
+        fn.addInstruction(NTOpcode.STORE_VAR,varNameInVars);
+    }
+    public void writeOpcodeLoadMap(String n) {
+        fn.addInstruction(NTOpcode.LOAD_MAP,n);
+    }
+    public void writeOpcodeStoreMap(String n) {
+        fn.addInstruction(NTOpcode.STORE_MAP,n);
+    }
+    public void writeOpcodeCallMethod(int argNum) {
+        fn.addInstruction(NTOpcode.CALL_METHOD,argNum);
     }
 }

@@ -81,7 +81,7 @@ public class NTParser {
         } else {
             parseDecNum();
             curToken.value = new NTValue(NTValue.ValueType.NUM);        
-            curToken.value.setValue(Double.valueOf(sourceCode.substring(curToken.start,nextCharPtr - 1)));         
+            curToken.value.setDouble(Double.valueOf(sourceCode.substring(curToken.start,nextCharPtr - 1)));         
         }
         curToken.length = nextCharPtr - curToken.start - 1;
         curToken.type = TokenType.NUM;

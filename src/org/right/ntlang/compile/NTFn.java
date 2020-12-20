@@ -35,16 +35,38 @@ public class NTFn implements Callable {
                     break;
                 case CALL:
                     String name = vm.constantVars_IV.get(instr.operand0).toString();
+                    int varNum = instr.operand1;
                     NTValue caller = vm.vars.get(name);    
-                    if (!caller.canCall()) throw new RunningException("can call this 'method'!");
-                    caller.call(vm);
+                    if (!caller.canCall()) throw new RunningException("can call this 'function'!");
+                    caller.call(vm,varNum);
+                    break;
+                case CALL_METHOD:
+                    // 形参数
+                    int varNum2 = instr.operand0;
+                    // 方法名
+                    String methodName = vm.s.elementAt(vm.s.size() - varNum2).toString();
+                    NTValue methodCaller = vm.vars.get(methodName);    
+                    if (!methodCaller.canCall()) throw new RunningException("can call this 'method'!");
+                    methodCaller.call(vm,varNum2);
                     break;
                 case LOAD_CONSTANT:
                     NTValue i = vm.constantVars_IV.get(instr.operand0);
                     if (i == null) throw new RunningException("Error Operand0!");
                     vm.s.push(i);
                     break;
-                    
+                 case LOAD_VAR:
+                     String varName = instr.opvalue;
+                     vm.s.push(vm.vars.get(varName));
+                     break;
+                 case LOAD_MAP:
+                     String fieldName = instr.opvalue;
+                     vm.s.push(vm.s.pop().getField(fieldName));
+                     break;
+//                case STORE_MAP:
+//                    String fieldName2 = instr.opvalue;
+//                    vm.s.pop().setField(fieldName2,vm.s.);
+//                    break;       
+                     
             }
         }
         return NTVM.VMResult.SUCCESS;

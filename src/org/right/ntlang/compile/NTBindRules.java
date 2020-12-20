@@ -90,7 +90,7 @@ public class NTBindRules {
             NTValue v = cu.curParser.getVM().vars.get(rule.id + " nud");
             assert v != null:"hhh";
             // System.out.println(v == null);
-            cu.writeOpcodeCall(vm.constantVars_SI.get(new NTValue(rule.id)),1);
+            cu.writeOpcodeCall(vm.constantVars_SI.get(rule.id + " nud"),1);
             //  v.call(cu.curParser.getVM());
         }
     };
@@ -108,6 +108,7 @@ public class NTBindRules {
             cu.writeOpcodeLoadVar(cu.curParser.sourceCode.substring(name.start,name.start + name.length));
         }
     };
+    
     // 「(」的.nud()方法。
     private static final DenotationFn parentheses = new DenotationFn() {
         @Override
@@ -117,6 +118,30 @@ public class NTBindRules {
             cu.curParser.consumeCurToken(NTToken.TokenType.RIGHT_PAREN, "expect ')' after expression!");
 
             
+        }
+    };
+    // 「(」的.led()方法
+    private static final DenotationFn callable = new DenotationFn() {
+        @Override
+        public void call(NTCompileUnit cu, boolean canAssign) throws LexException, CompileException {
+            NTParser p = cu.curParser;
+            // TODO.....
+            int argNum = 0;
+            if (!p.matchToken(NTToken.TokenType.RIGHT_PAREN)) {
+                argNum = cu.processArgList();
+                p.consumeCurToken(NTToken.TokenType.RIGHT_PAREN,"expect ')' after argument list!");
+            }
+            cu.writeOpcodeCallMethod(argNum);      
+        }
+    };
+    
+    // 「.」的.led()方法
+    private static final DenotationFn callEntry = new DenotationFn() {
+        @Override
+        public void call(NTCompileUnit cu, boolean canAssign) throws LexException, CompileException {
+            // 此时curParser是「.」，而且「.」前面的value已经加载到栈里去了，所以直接生成加载「.」后面的名字所对应的field就行了
+            cu.curParser.consumeCurToken(NTToken.TokenType.ID,"expect name after '.'!");
+            cu.writeOpcodeLoadMap(cu.curParser.sourceCode.substring(cu.curParser.preToken.start,cu.curParser.preToken.start + cu.curParser.preToken.length));
         }
     };
     /*******************分割线*******************/
@@ -139,8 +164,9 @@ public class NTBindRules {
         put(TokenType.DIV, new SymbolBindRule("/",BindPower.FACTOR,null,infixOperator));
         put(TokenType.MOD, new SymbolBindRule("%",BindPower.FACTOR,null,infixOperator));
         put(TokenType.POW, new SymbolBindRule("**",BindPower.POW,null,infixOperator));
-        put(TokenType.LEFT_PAREN, new SymbolBindRule("(",BindPower.NONE,parentheses,null));
+        put(TokenType.LEFT_PAREN, new SymbolBindRule("(",BindPower.NONE,parentheses,callable));
         put(TokenType.RIGHT_PAREN, unused);
+        put(TokenType.DOT, new SymbolBindRule(null,BindPower.CALL,null,callEntry));
     }};
     
 }
