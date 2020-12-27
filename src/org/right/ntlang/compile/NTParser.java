@@ -7,29 +7,35 @@ import static org.right.ntlang.compile.NTToken.TokenType;
 public class NTParser {
     private NTVM vm;
     
-    public String sourceCode;
+    public StringBuffer sourceCode;
     private String fileName;
     private int nextCharPtr;
     private char curChar;
     public NTToken curToken;
     public NTToken preToken;
     public NTCompileUnit curCompileUnit;
-    public NTParser(String fn,String sc) {
-        
+    public NTParser(String fn,StringBuffer sc) {
         fileName = fn;
-        curChar = sc.charAt(0);
         sourceCode = sc;
         nextCharPtr = 1;
         curToken = new NTToken(TokenType.UNKNOWN,0,0,1);
         preToken = curToken;
     }
+    public void initCurChar(int i) {
+        curChar = sourceCode.charAt(i);
+        curToken = new NTToken(TokenType.UNKNOWN,0,0,1);
+        preToken = curToken;
+    }
+    public void fixNextCharPtr(int i) {
+        nextCharPtr += i;
+    }
     public void setVM(NTVM v) {vm = v;}
     public NTVM getVM() {return vm;}
-    public char lookAheadChar() {
+    private char lookAheadChar() {
         return this.sourceCode.charAt(this.nextCharPtr);
     }
     
-    public void getNextChar() {
+    private void getNextChar() {
         if (nextCharPtr >= sourceCode.length()) {
             curChar = '\0';
             return;
@@ -37,7 +43,7 @@ public class NTParser {
         this.curChar = this.sourceCode.charAt(this.nextCharPtr++);
     }
     
-    public boolean matchNextChar(char expectedChar) {
+    private boolean matchNextChar(char expectedChar) {
         if (lookAheadChar() == expectedChar) {
             getNextChar();
             return true;
@@ -45,14 +51,14 @@ public class NTParser {
         return false;
     }
     
-    public void skipBlanks() {
+    private void skipBlanks() {
         while (Character.isWhitespace(curChar)) {
             if (curChar == '\n') curToken.lineNo++;
             getNextChar();
         }
     }
     
-    public void parseId(TokenType type) {
+    private void parseId(TokenType type) {
         while (Character.isJavaIdentifierPart(curChar)) 
             getNextChar();
         int len = nextCharPtr - curToken.start - 1;
@@ -73,7 +79,7 @@ public class NTParser {
         }
     }
     
-    public void parseNum() {
+    private void parseNum() {
         if (curChar == '0' && matchNextChar('x')) {
             // TODO
         } else if (curChar == '0' && Character.isDigit(lookAheadChar())) {
@@ -89,7 +95,7 @@ public class NTParser {
     }
     
     // 解析字符串，仅支持「"」即半角双引号扩起来的。
-    public void parseString() throws LexException {
+    private void parseString() throws LexException {
         StringBuffer sb = new StringBuffer();
         while (true) {
             getNextChar();
@@ -138,7 +144,7 @@ public class NTParser {
         }
     }
     
-    public void skipAline() {
+    private void skipAline() {
         getNextChar();
         while (nextCharPtr - 1 < sourceCode.length() && curChar != '\0') {
             if (curChar == '\n') {
@@ -150,7 +156,7 @@ public class NTParser {
         }
     }
     
-    public void skipComment() throws LexException {
+    private void skipComment() throws LexException {
         char nextChar = lookAheadChar();
         if (curChar == '/') {
             skipAline();
@@ -270,6 +276,9 @@ public class NTParser {
                     break;
                 case '~':
                     curToken.type = TokenType.BIT_NOT;
+                    break;
+                case '#':
+                    curToken.type = TokenType.SHARP;
                     break;
                 case '"':
                     parseString();

@@ -4,51 +4,57 @@ import org.right.ntlang.*;
 
 public class NTToken implements Cloneable {
     public static enum TokenType {
-        UNKNOWN(0),
-        NUM(1),STRING(2),ID(3),
-        TMP(4)/*tmp a = xxxx*/,FUN(5),IF(6),ELSE(7),TRUE(8),FALSE(9),WHILE(10),FOR(11),BREAK(12),CONTINUE(13),RETURN(14),NIL(15),
-        THIS(16),
+        UNKNOWN,
+        NUM,
+        STRING,
+        ID,
+        TMP/*tmp a = xxxx*/,
+        /*常量*/
+        TRUE,
+        FALSE,
+        RETURN,
+        NIL,
+        THIS,
+        SHARP, // #
         /**分隔符**/
-        COMMA(17), // ,
-        COLON(18), // :
-        LEFT_PAREN(19), // (
-        RIGHT_PAREN(20), // )
-        LEFT_BRACKET(21), // [
-        RIGHT_BRACKET(22), // ]
-        LEFT_BRACE(23), // {
-        RIGHT_BRACE(24), // }
-        DOT(25), // .
-        DOT_DOT(26), //..
-        ADD(27), // +
-        SUB(28), // -
-        MUL(29), // *
-        DIV(30), // /
-        MOD(31), // %
+        COMMA, // ,
+        COLON, // :
+        LEFT_PAREN, // (
+        RIGHT_PAREN, // )
+        LEFT_BRACKET, // [
+        RIGHT_BRACKET, // ]
+        LEFT_BRACE, // {
+        RIGHT_BRACE, // }
+        DOT, // .
+        DOT_DOT, //..
+        ADD, // +
+        SUB, // -
+        MUL, // *
+        DIV, // /
+        MOD, // %
         
-        ASSIGN(32), // =
+        ASSIGN, // =
         
-        BIT_AND(33), // &
-        BIT_OR(34), // |
-        BIT_NOT(35), // ~
-        BIT_SHIFT_RIGHT(36), // >>
-        BIT_SHIFT_LEFT(37), // <<
+        BIT_AND, // &
+        BIT_OR, // |
+        BIT_NOT, // ~
+        BIT_SHIFT_RIGHT, // >>
+        BIT_SHIFT_LEFT, // <<
         
-        LOGIC_AND(38), // &&
-        LOGIC_OR(39), // ||
-        LOGIC_NOT(40), // !
-        EQUAL(41), // ==
-        NOT_EQUAL(42), // !=
-        GREATE(43), // >
-        GREATE_EQUAL(44), // >=
-        LESS(45), // <
-        LESS_EQUAL(46), // <=
+        LOGIC_AND, // &&
+        LOGIC_OR, // ||
+        LOGIC_NOT, // !
+        EQUAL, // ==
+        NOT_EQUAL, // !=
+        GREATE, // >
+        GREATE_EQUAL, // >=
+        LESS, // <
+        LESS_EQUAL, // <=
         
-        QUESTION(47), // ?
-        SEMI_COLON(48), // ;
-        POW(49), // **
-        EOF(255); // "EOF" 文件结尾
-        
-        private final byte id;
+        QUESTION, // ?
+        SEMI_COLON, // ;
+        POW, // **
+        EOF; // "EOF" 文件结尾
         private static HashMap<Integer, TokenType> mappings;
         private synchronized static HashMap<Integer, TokenType> getMappings() {
             if (mappings == null) {
@@ -57,28 +63,16 @@ public class NTToken implements Cloneable {
             return mappings;
         }
         
-        TokenType(int id) {
-            this.id = (byte)id;
-            TokenType.getMappings().put(id, this);
-        }
-        
-        public byte getId() {
-            return id;
+        public int getId() {
+            return this.ordinal();
         }
     }
     
-    public static Map<String,TokenType> keywordsToken 
+    private static Map<String,TokenType> keywordsToken 
       = new HashMap<String,TokenType>() {{
           put("tmp",TokenType.TMP);
-          put("fn",TokenType.FUN);
-          put("if",TokenType.IF);
-          put("else",TokenType.ELSE);
           put("true",TokenType.TRUE);
           put("false",TokenType.FALSE);
-          put("while",TokenType.WHILE);
-          put("for",TokenType.FOR);
-          put("break",TokenType.BREAK);
-          put("continue",TokenType.CONTINUE);
           put("return",TokenType.RETURN);
           put("nil",TokenType.NIL);
           put("this",TokenType.THIS);
