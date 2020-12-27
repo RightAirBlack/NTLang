@@ -29,14 +29,69 @@ public class NTValueNum extends NTValue {
                                return false;
                            }
         }));
-//        fields.put("", new NTValue(new NTCallable(){
-//                           @Override
-//                           public boolean call(NTVM vm,int varNum) throws RunningException {
-//                               vm.popNumTimes(varNum);
-//                               vm.s.push(new NTValue("nil"));
-//                               return false;
-//                           }
-//        }));          
+        fields.put("- nud", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(- n.getDouble()));
+                               return false;
+                           }
+        }));       
+        fields.put("+ nud", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               // +号对数字没有改变
+                               return false;
+                           }
+                       }));          
+        fields.put("+", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(vm.s.pop().getDouble() + n.getDouble()));
+                               return false;
+                           }
+                       }));  
+        fields.put("-", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(vm.s.pop().getDouble() - n.getDouble()));
+                               return false;
+                           }
+                       }));  
+        fields.put("/", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(vm.s.pop().getDouble() / n.getDouble()));
+                               return false;
+                           }
+                       }));        
+        fields.put("*", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(vm.s.pop().getDouble() * n.getDouble()));
+                               return false;
+                           }
+                       }));        
+        fields.put("%", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(vm.s.pop().getDouble() % n.getDouble()));
+                               return false;
+                           }
+                       }));          
+        fields.put("**", new NTValue(new NTCallable(){
+                           @Override
+                           public boolean call(NTVM vm,int varNum) throws RunningException {
+                               NTValue n = vm.s.pop();
+                               vm.s.push(new NTValue(Math.pow(vm.s.pop().getDouble(),n.getDouble())));
+                               return false;
+                           }
+                       }));      
     }
     
     public NTValueNum(double num) {

@@ -5,7 +5,7 @@ import org.right.ntlang.exception.*;
 import org.right.ntlang.interfaces.*;
 
 public class NTValueString extends NTValue {
-     // Num的fields
+     // Map的fields
     private static Map<String,NTValue> fields = new HashMap<String,NTValue>();
     
     static {

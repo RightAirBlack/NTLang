@@ -3,11 +3,12 @@ import java.util.*;
 import org.right.ntlang.exception.*;
 import org.right.ntlang.interfaces.*;
 import java.util.concurrent.*;
+import java.math.*;
 
 public class NTValue {
     public static enum ValueType {
         NIL(0),FALSE(1),TRUE(2),NUM(3),STRING(4),
-        USERDATA(5),CALLABLE(6),MAP(7),LIST(8),RANGE(9),
+        USERDATA(5),CALLABLE(6),MAP(7),ARRAY(8),RANGE(9),
         CLASS(10),INSTANCE(11);
         public final byte id;
         ValueType(int i) {
@@ -16,7 +17,7 @@ public class NTValue {
     }
     
     //一些常量
-    public static final NTValue NaN = new NTValue(Double.NaN);
+    // public static final NTValue NaN = new NTValue(Double.NaN); 似乎把NaN或infinity传给BigDecimal会报错
     public static final NTValue NIL = new NTValueNil();
     public static final NTValue TRUE = new NTValue(ValueType.TRUE);
     public static final NTValue FALSE = new NTValue(ValueType.FALSE);
@@ -24,9 +25,10 @@ public class NTValue {
     protected Object userdata = null;
     protected String str = null;
     protected Map<String,NTValue> map = null;
-    protected double num = Double.NaN;
+    protected Vector<NTValue> array = null;
+//    protected double number = Double.NaN;
     protected NTCallable caller = null;
-    
+    protected BigDecimal number = null;
     public NTValue(ValueType type) {
         this.type = type;     
     }
@@ -42,7 +44,10 @@ public class NTValue {
         this(ValueType.MAP);
         map = c;
     }
-    
+    public NTValue(Vector<NTValue> c) {
+        this(ValueType.ARRAY);
+        array = c;
+    }
     public NTValue(double n) {
         this(ValueType.NUM);
         setDouble(n);
@@ -64,13 +69,15 @@ public class NTValue {
             case TRUE:
                 return "true";
             case NUM:
-                return Double.toString(num);
+                return number == null ? "null" : number.toString();
             case STRING:
                 return str;
             case CALLABLE:
                 return caller.toString();
             case MAP:
                 return map.toString();
+            case ARRAY:
+                return array.toString();
             default:
                 return userdata.toString();
         }
@@ -86,7 +93,7 @@ public class NTValue {
             case TRUE:
                 return "true".hashCode();
             case NUM:
-                return new Double(num).hashCode();
+                return number.hashCode();
             case STRING:
                 return str.hashCode();
             case CALLABLE:
@@ -107,7 +114,7 @@ public class NTValue {
             case TRUE:
                 return TRUE;
             case NUM:
-                return num;
+                return number;
             case STRING:
                 return str;
             case CALLABLE:
@@ -156,6 +163,11 @@ public class NTValue {
     }
     
     // NUM
+    public BigDecimal getBigDecimal() throws RunningException {
+        if (number == null) 
+            throw new RunningException("cannot get bigDecimal!");
+        return number;
+    }
     public double toNum() {
         switch (type) {
             case NIL:
@@ -164,7 +176,7 @@ public class NTValue {
             case TRUE:
                 return 1.0;
             case NUM:
-                return num;
+                return number.doubleValue();
             case USERDATA:
                 return userdata instanceof Number ? (Double)(Number)userdata : Double.NaN;
             default:
@@ -172,96 +184,96 @@ public class NTValue {
         }
     }
     public void setInt(int n) {
-        num = n;
+        number = number.valueOf(n);
     }
 
     public void setInt(Integer n) {
-        num = n;
-        userdata = n;
+        number = number.valueOf(n);
+        //userdata = n;
     }
     
     public int toInt() throws RunningException {
-           if (num != Double.NaN) return (int)num;
+           if (number.doubleValue() != Double.NaN) return number.intValue();
            if (userdata instanceof Number)
                return userdata;
            return Integer.MIN_VALUE;
     }
     
     public void setDouble(double n) {
-        num = n;
+        number = number.valueOf(n);
     }
 
     public void setDouble(Double n) {
-        num = n;
-        userdata = n;
+        number = number.valueOf(n);
+        // userdata = n;
     }
     
     public double getDouble() {
-        if (num != Double.NaN) return num;
+        if (number.doubleValue() != Double.NaN) return number.doubleValue();
         if (userdata instanceof Number)
             return userdata;
         return Double.NaN;
     }
 
     public void setFloat(float n) {
-        num = n;
+        number = number.valueOf(n);
     }
 
     public void setFloat(Float n) {
-        num = n;
-        userdata = n;
+        number = number.valueOf(n);
+        // userdata = n;
     }
     
     public float toFloat() {
-        if (num != Double.NaN) return  (float)num;
+        if (number.doubleValue() != Double.NaN) return number.floatValue();
         if (userdata instanceof Number)
             return userdata;
         return Float.NaN;
     }
     
     public void setLong(long n) {
-        num = n;
+        number = number.valueOf(n);
     }
 
     public void setLong(Long n) {
-        num = n;
-        userdata = n;
+        number = number.valueOf(n);
+        // userdata = n;
     }
 
     public long toLong() {
-        if (num != Double.NaN) return  (long)num;
+        if (number.doubleValue() != Double.NaN) return number.longValue();
         if (userdata instanceof Number)
             return userdata;
         return Long.MIN_VALUE;
     }
     
     public void setShort(short n) {
-        num = n;
+        number = number.valueOf(n);
     }
 
     public void setShort(Short n) {
-        num = n;
-        userdata = n;
+        number = number.valueOf(n);
+        // userdata = n;
     }
-
+   
     public short toShort() {
-        if (num != Double.NaN) return  (short)num;
+        if (number.doubleValue() != Double.NaN) return  number.shortValueExact();
         if (userdata instanceof Number)
             return userdata;
         return Short.MIN_VALUE;
     }
     
     public void setByte(byte n) {
-        num = n;
+        number = number.valueOf(n);
     }
 
     public void setByte(Byte n) {
-        num = n;
-        userdata = n;
+        number = number.valueOf(n);
+        // userdata = n;
     }
 
     public byte toByte() {
-        if (num != Double.NaN) return  (byte)num;
+        if (number.doubleValue() != Double.NaN) return  number.byteValueExact();
         if (userdata instanceof Number)
             return userdata;
         return Byte.MIN_VALUE;
@@ -316,5 +328,26 @@ public class NTValue {
     }
     public void setUserdata(Object u){
         userdata = u;
+    }
+    
+    //ARRAY
+    public NTValue getElement(int at) {
+        if (type != ValueType.ARRAY)
+            return getField(Integer.toString(at));
+        if (at >= array.size())
+            return NTValue.NIL;
+        return array.get(at);
+    }
+    public void setElement(int at,NTValue v) throws RunningException {
+        if (type != ValueType.ARRAY)
+            setField(Integer.toString(at),v);
+        if (at >= array.size())
+            array.setSize(at + 1);
+        array.set(at,v);
+    }
+    public void addElement(NTValue v) throws RunningException {
+        if (type != ValueType.ARRAY)
+            throw new RunningException("can only array use addElement() method!");
+        array.add(v);
     }
 }
