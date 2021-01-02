@@ -15,3 +15,9 @@ NTLang，即NTLanguage，又名MOYU，膜语言，一款基于JAVA的，臃肿�
 > 啊这，主要还是为了开发进度，以后有时间会重构的。QAQ
 - 为什么不用lambda表达式?不会吗？
 > lambda写到是能写，但我是在手机上用aide写的代码，而aide的JDK版本似乎有点低，导致aide并不支持lambda表达式。所以希望看源码的小伙伴能谅解一下啦，awa。
+# 语法展示
+```javascript
+a = -1+(2/3*4-6)+2 // 定义变量
+b = [a,{"key":12}] // 数组及map
+out(b) // 打印变量
+```
