@@ -104,7 +104,65 @@ public class NTBindRules {
             
         }
     };
-    
+    // 「||」的.led()方法。
+    private static final DenotationFn logicOr = new DenotationFn() {
+        @Override
+        public void call(NTCompileUnit cu, boolean canAssign) throws LexException, CompileException {
+            // 判断条件在栈顶
+            cu.writeOpcodeLogicOr();
+            // 获取当前指令地址用于"回填"
+            int oldInstructionIndex = cu.fn.getCurInstrIndex();
+            // 生成计算右操作数的指令
+            cu.expression(BindPower.LOGIC_OR);
+            // 回填
+            int offset = cu.fn.getCurInstrIndex() - oldInstructionIndex;
+            cu.fn.patchPlaceInstruction(oldInstructionIndex,offset);
+            
+            
+        }
+    };
+    // 「&&」的.led()方法。
+    private static final DenotationFn logicAnd = new DenotationFn() {
+        @Override
+        public void call(NTCompileUnit cu, boolean canAssign) throws LexException, CompileException {
+            // 判断条件在栈顶
+            cu.writeOpcodeLogicAnd();
+            // 获取当前指令地址用于"回填"
+            int oldInstructionIndex = cu.fn.getCurInstrIndex();
+            // 生成计算右操作数的指令
+            cu.expression(BindPower.LOGIC_AND);
+            // 回填
+            int offset = cu.fn.getCurInstrIndex() - oldInstructionIndex;
+            cu.fn.patchPlaceInstruction(oldInstructionIndex,offset);
+        }
+    };
+    // 「?:」的.led()方法。
+    private static final DenotationFn condition = new DenotationFn() {
+        @Override
+        public void call(NTCompileUnit cu, boolean canAssign) throws LexException, CompileException {
+            // 判断条件在栈顶
+            cu.writeOpcodeJumpIfFalse();
+            // 获取当前指令地址用于"回填"
+            int falseBranchStart = cu.fn.getCurInstrIndex();
+            // 生成计算左边结果的指令
+            cu.expression(BindPower.LOWEST);
+            cu.curParser.consumeCurToken(NTToken.TokenType.COLON,"expect ':' after true branch!");
+            // 执行完true分支后需要跳过false分支
+            cu.writeOpcodeJump();
+            int falseBranchEnd = cu.fn.getCurInstrIndex();
+            // 先回填true
+            int offset = cu.fn.getCurInstrIndex() - falseBranchStart;
+            cu.fn.patchPlaceInstruction(falseBranchStart,offset);
+            
+            // 随后编译false分支
+            cu.expression(BindPower.LOWEST);
+            
+            // 再回填false分支
+            offset = cu.fn.getCurInstrIndex() - falseBranchEnd;
+            cu.fn.patchPlaceInstruction(falseBranchEnd,offset);
+            
+        }
+    };
     // 「(」的.nud()方法。
     private static final DenotationFn parentheses = new DenotationFn() {
         @Override
@@ -271,13 +329,15 @@ public class NTBindRules {
         put(TokenType.DIV, new SymbolBindRule("/",BindPower.FACTOR,null,infixOperator));
         put(TokenType.MOD, new SymbolBindRule("%",BindPower.FACTOR,null,infixOperator));
         put(TokenType.POW, new SymbolBindRule("**",BindPower.POW,null,infixOperator));
-        put(TokenType.LEFT_PAREN, new SymbolBindRule("(",BindPower.CALL,parentheses,callable));
+        put(TokenType.LEFT_PAREN, new SymbolBindRule(null,BindPower.CALL,parentheses,callable));
         put(TokenType.RIGHT_PAREN, unused);
-        put(TokenType.LEFT_BRACKET, new SymbolBindRule("[",BindPower.CALL,arrayLiteral,subscript));
+        put(TokenType.LEFT_BRACKET, new SymbolBindRule(null,BindPower.CALL,arrayLiteral,subscript));
         put(TokenType.RIGHT_BRACKET, unused);
-        put(TokenType.LEFT_BRACE, new SymbolBindRule("{",BindPower.NONE,mapLiteral,null));
+        put(TokenType.LEFT_BRACE, new SymbolBindRule(null,BindPower.NONE,mapLiteral,null));
         put(TokenType.RIGHT_BRACE, unused);
-                
+        put(TokenType.LOGIC_OR, new SymbolBindRule(null,BindPower.LOGIC_OR,null,logicOr));
+        put(TokenType.LOGIC_AND, new SymbolBindRule(null,BindPower.LOGIC_AND,null,logicAnd));
+        put(TokenType.QUESTION, new SymbolBindRule(null,BindPower.ASSIGN,null,condition));
         put(TokenType.DOT, new SymbolBindRule(null,BindPower.CALL,null,callEntry));
     }};
 }

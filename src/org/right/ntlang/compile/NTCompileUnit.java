@@ -168,4 +168,16 @@ public class NTCompileUnit implements Callable {
     public void writeOpcodeDup() {
         fn.addInstruction(NTOpcode.DUP);
     }
+    public void writeOpcodeLogicOr() {
+        fn.addInstruction(NTOpcode.LOGIC_OR,-1);
+    }
+    public void writeOpcodeLogicAnd() {
+        fn.addInstruction(NTOpcode.LOGIC_AND,-1);
+    }
+    public void writeOpcodeJumpIfFalse() {
+        fn.addInstruction(NTOpcode.JUMP_IF_FALSE,-1);
+    }
+    public void writeOpcodeJump() {
+        fn.addInstruction(NTOpcode.JUMP,-1);
+    }
 }
