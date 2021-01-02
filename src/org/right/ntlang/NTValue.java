@@ -350,4 +350,18 @@ public class NTValue {
             throw new RunningException("can only array use addElement() method!");
         array.add(v);
     }
+    // BOOLEAN
+    public boolean toBoolean() {
+        if (type == ValueType.FALSE || 
+            type == ValueType.NIL || (type == ValueType.USERDATA && userdata == null))
+            return false;
+        switch (type) {
+            case NUM:
+                return number.compareTo(BigDecimal.ZERO) != 0;
+            case STRING:
+                return str.length() > 0;
+            default:
+                return true;
+        }
+    }
 }
