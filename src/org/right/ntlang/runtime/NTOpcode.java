@@ -19,8 +19,8 @@ public enum NTOpcode {
     JUMP,
     LOOP,
     JUMP_IF_FALSE,
-    AND,
-    OR,
+    LOGIC_AND,
+    LOGIC_OR,
     RETURN, // 返回表达式
     POP, // 丢掉栈顶
     DUP, // 复制栈顶

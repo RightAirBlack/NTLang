@@ -5,16 +5,16 @@ public class NTInstruction {
     public NTInstruction(NTOpcode opcode) {
         this(opcode, 0, 0);
     }
-    public NTInstruction(NTOpcode opcode, int operand0) {
-        this(opcode, operand0, 0);
+    public NTInstruction(NTOpcode opcode, int a) {
+        this(opcode, a, 0);
     }
-    public NTInstruction(NTOpcode opcode, int operand0, int operand1) {
+    public NTInstruction(NTOpcode opcode, int a, int b) {
         this.opcode = opcode;
-        this.operand0 = operand0;
-        this.operand1 = operand1;
+        this.a = a;
+        this.b = b;
     }
     
     public NTOpcode opcode = NTOpcode.forValue(0); //指令类型
-    public int operand0; //指令值1
-    public int operand1; //指令值2
+    public int a; //指令值1
+    public int b; //指令值2
 }

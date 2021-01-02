@@ -8,8 +8,8 @@ import java.util.concurrent.*;
 
 public class NTFn implements Callable {
 
-    private Vector<NTInstruction> instrStream;
-    private Vector<NTValue> constant;
+    private LinkedList<NTInstruction> instrStream;
+    private LinkedList<NTValue> constant;
     private NTVM vm;
     
     // 记录上次运行时表达式的值，初始是nil
@@ -22,8 +22,8 @@ public class NTFn implements Callable {
     }
     
     public NTFn(NTVM vm) {
-        instrStream = new Vector<NTInstruction>(1024);
-        constant = new Vector<NTValue>();
+        instrStream = new LinkedList<NTInstruction>();
+        constant = new LinkedList<NTValue>();
         this.vm = vm;
     }
     @Override
@@ -31,7 +31,7 @@ public class NTFn implements Callable {
         int length = instrStream.size();
         NTInstruction instr;
         for (int index = 0;index < length;index++) {
-            instr = instrStream.elementAt(index);
+            instr = instrStream.get(index);
             switch (instr.opcode) {
                 case PUSH_NIL:
                     vm.s.push(NTValue.NIL);
@@ -151,6 +151,30 @@ public class NTFn implements Callable {
                 case DUP:
                     vm.s.push(vm.s.peek());
                     break;
+                case LOGIC_AND:
+                    NTValue left = vm.s.peek();
+                    if (left.toBoolean()) {
+                        vm.s.pop();
+                        break;
+                    }
+                    index += instr.operand0;
+                    break;
+                case LOGIC_OR:
+                    NTValue left2 = vm.s.peek();
+                    if (left2.toBoolean()) {
+                        index += instr.operand0;
+                        break;
+                    }
+                    vm.s.pop();
+                    break;
+                case JUMP_IF_FALSE:
+                    NTValue condition = vm.s.pop();
+                    if (!condition.toBoolean())
+                        index += instr.operand0;
+                    break;
+                case JUMP:
+                    index += instr.operand0;
+                    break;
             }
         }
         if (vm.s.size() > 0)
@@ -173,5 +197,11 @@ public class NTFn implements Callable {
     // 重置字节流
     public void resetInstrStream() {
         instrStream.clear();
+    }
+    public int getCurInstrIndex() {
+        return instrStream.size() - 1;
+    }
+    public void patchPlaceInstruction(int i,int offset) {
+        instrStream.get(i).operand0 = offset;
     }
 }
